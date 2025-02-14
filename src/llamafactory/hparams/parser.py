@@ -32,6 +32,7 @@ from transformers.utils import is_torch_bf16_gpu_available, is_torch_npu_availab
 
 from ..extras import logging
 from ..extras.constants import CHECKPOINT_NAMES
+from ..extras.env import is_torch_qaic_available
 from ..extras.misc import check_dependencies, check_version, get_current_device, is_env_enabled
 from .data_args import DataArguments
 from .evaluation_args import EvaluationArguments
@@ -259,6 +260,9 @@ def get_train_args(args: Optional[Union[Dict[str, Any], List[str]]] = None) -> _
         if not (is_torch_bf16_gpu_available() or (is_torch_npu_available() and torch.npu.is_bf16_supported())):
             raise ValueError("This device does not support `pure_bf16`.")
 
+        if is_torch_qaic_available():
+            raise ValueError("This device does not support `pure_bf16`.")
+
         if is_deepspeed_zero3_enabled():
             raise ValueError("`pure_bf16` is incompatible with DeepSpeed ZeRO-3.")
 
@@ -379,6 +383,11 @@ def get_train_args(args: Optional[Union[Dict[str, Any], List[str]]] = None) -> _
     model_args.model_max_length = data_args.cutoff_len
     model_args.block_diag_attn = data_args.neat_packing
     data_args.packing = data_args.packing if data_args.packing is not None else finetuning_args.stage == "pt"
+
+    # Log training args info. for QAic
+    # print(f"Training Args : {training_args}")
+    # print(f"Model Args : {model_args}")
+    # Change the device to QAic
 
     # Log on each process the small summary
     logger.info(

@@ -34,10 +34,11 @@ from transformers.utils import (
 from transformers.utils.versions import require_version
 
 from . import logging
+from .env import is_torch_qaic_available
 from .packages import is_transformers_version_greater_than
 
 
-_is_fp16_available = is_torch_npu_available() or is_torch_cuda_available()
+_is_fp16_available = is_torch_npu_available() or is_torch_cuda_available() or is_torch_qaic_available()
 try:
     _is_bf16_available = is_torch_bf16_gpu_available() or (is_torch_npu_available() and torch.npu.is_bf16_supported())
 except Exception:
@@ -159,6 +160,8 @@ def get_current_device() -> "torch.device":
         device = "mps:{}".format(os.environ.get("LOCAL_RANK", "0"))
     elif is_torch_cuda_available():
         device = "cuda:{}".format(os.environ.get("LOCAL_RANK", "0"))
+    elif is_torch_qaic_available():
+        device = "qaic:{}".format(os.environ.get("LOCAL_RANK", "0"))
     else:
         device = "cpu"
 
