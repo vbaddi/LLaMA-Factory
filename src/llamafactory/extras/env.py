@@ -26,6 +26,16 @@ import trl
 from transformers.utils import is_torch_cuda_available, is_torch_npu_available
 
 
+def is_torch_qaic_available() -> bool:
+    """Check the availability of QAic"""
+    try:
+        import torch_qaic  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
 VERSION = "0.9.2.dev0"
 
 
@@ -52,6 +62,10 @@ def print_env() -> None:
         info["PyTorch version"] += " (NPU)"
         info["NPU type"] = torch.npu.get_device_name()
         info["CANN version"] = torch.version.cann
+
+    if is_torch_qaic_available():
+        info["PyTorch version"] += " (QAic)"
+        info["QAic type"] = "QAic Eager"
 
     try:
         import deepspeed  # type: ignore
